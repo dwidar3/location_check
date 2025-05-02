@@ -3,6 +3,7 @@ import Employee from "../models/employee.js";
 import Organization from "../models/organization.js";
 
 import ErrorResponse from "../utils/errorResponse.js";
+
 function calculateDistance(coord1, coord2) {
   const [lng1, lat1] = coord1;
   const [lng2, lat2] = coord2;
@@ -34,15 +35,6 @@ export const checkin = async (req, res) => {
     const orgLocation = employee.organization.location.coordinates;
     const userLocation = [parseFloat(lng), parseFloat(lat)];
     const distance = calculateDistance(userLocation, orgLocation);
-
-
-
-
-const withinRange = isWithinRange(location, organization.location);
-if (!withinRange) {
-  return next(new ErrorResponse("You are not within range to check-in", 400));
-}
-
 
     if (distance > 100) {
       return res.status(403).json({ message: "Not within range for check-in" });
@@ -76,7 +68,7 @@ export const checkout = async (req, res) => {
     if (!attendance) return res.status(404).json({ message: "No active check-in found" });
 
     const now = new Date();
-    const duration = Math.round((now - attendance.checkIn) / 60000); 
+    const duration = Math.round((now - attendance.checkIn) / 60000);
 
     attendance.checkOut = now;
     attendance.duration = duration;
@@ -132,53 +124,53 @@ export const getAllAttendance = async (req, res) => {
 };
 
 export const isWithinRange = async (req, res, next) => {
-    const { lat, lng, employeeId } = req.query;  
-  
-    if (!lat || !lng || !employeeId) {
-      return next(new ErrorResponse("Missing required parameters", 400));
+  const { lat, lng, employeeId } = req.query;
+
+  if (!lat || !lng || !employeeId) {
+    return next(new ErrorResponse("Missing required parameters", 400));
+  }
+
+  try {
+    const employee = await Employee.findById(employeeId).populate("organization");
+    if (!employee) {
+      return next(new ErrorResponse("Employee not found", 404));
     }
-  
-    try {
-  
-      const organization = await Organization.findOne({ "employees": employeeId });
-  
-      if (!organization) {
-        return next(new ErrorResponse("Organization not found for employee", 404));
-      }
-  
-      
-      const organizationLocation = organization.location;
-  
-      
-      const employeeLocation = {
-        type: "Point",
-        coordinates: [parseFloat(lng), parseFloat(lat)],  
-      };
-  
-      
-      const distance = await Organization.aggregate([
-        {
-          $geoNear: {
-            near: employeeLocation,
-            distanceField: "distance",
-            spherical: true,
-            maxDistance: 100,  
-            query: { _id: organization._id },  
-          },
+
+    const organization = employee.organization;
+    if (!organization) {
+      return next(new ErrorResponse("Organization not found for employee", 404));
+    }
+
+    const organizationLocation = organization.location;
+
+    const employeeLocation = {
+      type: "Point",
+      coordinates: [parseFloat(lng), parseFloat(lat)],
+    };
+
+    const distance = await Organization.aggregate([
+      {
+        $geoNear: {
+          near: employeeLocation,
+          distanceField: "distance",
+          spherical: true,
+          maxDistance: 100,
+          query: { _id: organization._id },
         },
-      ]);
-  
-      if (distance.length === 0) {
-        return next(new ErrorResponse("Employee is not within the valid range of the organization", 400));
-      }
-  
-    
-      res.status(200).json({
-        success: true,
-        message: "Employee is within the valid range for check-in.",
-      });
-  
-    } catch (error) {
-      next(error);
+      },
+    ]);
+
+    if (distance.length === 0) {
+      return next(new ErrorResponse("Employee is not within the valid range of the organization", 400));
     }
-  };
+
+    res.status(200).json({
+      success: true,
+      message: "Employee is within the valid range for check-in.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+

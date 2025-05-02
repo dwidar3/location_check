@@ -5,6 +5,7 @@ export const createOrganization = async (req, res, next) => {
   try {
     const { name, location } = req.body;
     const org = new Organization({ name, location });
+    
     await org.save();
     res.status(201).json(org);
   } catch (err) {
