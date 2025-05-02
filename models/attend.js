@@ -1,4 +1,4 @@
-// models/Attendance.js
+
 import mongoose from "mongoose";
 
 const attendanceSchema = new mongoose.Schema({
@@ -14,9 +14,9 @@ const attendanceSchema = new mongoose.Schema({
       type: String,
       enum: ["Point"]
     },
-    coordinates: [Number] // [longitude, latitude]
+    coordinates: [Number] 
   },
-  duration: Number // in minutes
+  duration: Number 
 });
 
 export default mongoose.model("Attendance", attendanceSchema);

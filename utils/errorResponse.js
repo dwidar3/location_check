@@ -1,10 +1,10 @@
-// utils/errorResponse.js
+
 
 class ErrorResponse extends Error {
   constructor(message, statusCode) {
-    super(message);  // Call the parent class constructor
+    super(message);  
     this.statusCode = statusCode;
-    Error.captureStackTrace(this, this.constructor); // Capture the stack trace
+    Error.captureStackTrace(this, this.constructor); 
   }
 }
 

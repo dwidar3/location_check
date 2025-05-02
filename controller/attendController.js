@@ -37,7 +37,7 @@ export const checkin = async (req, res) => {
 
 
 
-// later inside your check-in logic:
+
 const withinRange = isWithinRange(location, organization.location);
 if (!withinRange) {
   return next(new ErrorResponse("You are not within range to check-in", 400));
@@ -76,7 +76,7 @@ export const checkout = async (req, res) => {
     if (!attendance) return res.status(404).json({ message: "No active check-in found" });
 
     const now = new Date();
-    const duration = Math.round((now - attendance.checkIn) / 60000); // in minutes
+    const duration = Math.round((now - attendance.checkIn) / 60000); 
 
     attendance.checkOut = now;
     attendance.duration = duration;
@@ -132,38 +132,38 @@ export const getAllAttendance = async (req, res) => {
 };
 
 export const isWithinRange = async (req, res, next) => {
-    const { lat, lng, employeeId } = req.query;  // Get coordinates and employee ID from query
+    const { lat, lng, employeeId } = req.query;  
   
     if (!lat || !lng || !employeeId) {
       return next(new ErrorResponse("Missing required parameters", 400));
     }
   
     try {
-      // Get the employee's assigned organization
+  
       const organization = await Organization.findOne({ "employees": employeeId });
   
       if (!organization) {
         return next(new ErrorResponse("Organization not found for employee", 404));
       }
   
-      // Organization location (GeoJSON format)
+      
       const organizationLocation = organization.location;
   
-      // Create a point for the employee's location
+      
       const employeeLocation = {
         type: "Point",
-        coordinates: [parseFloat(lng), parseFloat(lat)],  // [longitude, latitude]
+        coordinates: [parseFloat(lng), parseFloat(lat)],  
       };
   
-      // Use MongoDB's $geoWithin and $centerSphere operator to check if the employee's location is within the 100 meters range
+      
       const distance = await Organization.aggregate([
         {
           $geoNear: {
             near: employeeLocation,
             distanceField: "distance",
             spherical: true,
-            maxDistance: 100,  // 100 meters in MongoDB's default geo query unit (meters)
-            query: { _id: organization._id },  // Filter to the specific organization
+            maxDistance: 100,  
+            query: { _id: organization._id },  
           },
         },
       ]);
@@ -172,7 +172,7 @@ export const isWithinRange = async (req, res, next) => {
         return next(new ErrorResponse("Employee is not within the valid range of the organization", 400));
       }
   
-      // If we reach here, the employee is within the range
+    
       res.status(200).json({
         success: true,
         message: "Employee is within the valid range for check-in.",
