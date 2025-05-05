@@ -13,8 +13,8 @@ export const createEmployee = async (req, res, next) => {
     if (!org) return next(new ErrorResponse("Organization not found", 404));
     org.employees.push(employee._id);
     await org.save();
-    employee.organization = org._id; // Update the employee's organization reference
-    await employee.save(); // Save the employee again to update the reference
+    employee.organization = org._id; 
+    await employee.save(); 
     res.status(201).json(employee);
   } catch (error) {
     next(error);
