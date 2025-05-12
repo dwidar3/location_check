@@ -12,7 +12,7 @@ const organizationSchema = new mongoose.Schema({
         required: true,
       },
       coordinates: {
-        type: [Number], // [longitude, latitude]
+        type: [Number], 
         required: true,
       },
     },
@@ -22,7 +22,7 @@ const organizationSchema = new mongoose.Schema({
       }],
   });
   
-  organizationSchema.index({ location: "2dsphere" }); // ضروري لدعم الاستعلامات الجغرافية
+  organizationSchema.index({ location: "2dsphere" }); 
   
 
 export default mongoose.model("Organization", organizationSchema);
